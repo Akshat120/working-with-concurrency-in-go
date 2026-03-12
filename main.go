@@ -5,48 +5,40 @@ import (
 	"sync"
 )
 
-func printSomething(s string, wg *sync.WaitGroup) {
+var msg string
+
+func updateMessage(s string, wg *sync.WaitGroup) {
 	defer wg.Done()
-	fmt.Println(s)
+	msg = s
 }
 
-// main fun itself a goroutine
-// goroutines are light-weight threads,
-// group of goroutine managed by go-scheduler
+func printMessage() {
+	fmt.Println(msg)
+}
+
 func main() {
 	var wg sync.WaitGroup
+	// challenge: modify this code so that the calls to updateMessage() on lines
+	// 28, 30, and 33 run as goroutines, and implement wait groups so that
+	// the program runs properly, and prints out three different messages.
+	// Then, write a test for all three functions in this program: updateMessage(),
+	// printMessage(), and main().
 
-	words := []string{
-		"alpha",
-		"beta",
-		"delta",
-		"gamma",
-		"pi",
-		"zeta",
-		"eta",
-		"theta",
-		"epsilon",
-	}
-
-	// Increased waitgroup counter to the len of words
-	wg.Add(len(words))
-
-	for i, x := range words {
-		go printSomething(fmt.Sprintf("%v: %v", i, x), &wg)
-	}
-
-	// Bad Solution
-	// if the slice of words we have created above,
-	// if its size increases then we don't know how
-	// much we need to wait for all the goroutine
-	// needs to be completed going to variable time.
-	// time.Sleep(1 * time.Second)
-
-	// Waiting on waitgroups
-	wg.Wait()
+	msg = "Hello, world!"
 
 	wg.Add(1)
-	// this will be run in main go-routine
-	printSomething("This is second thing to be printed!", &wg)
+	go updateMessage("Hello, universe!", &wg)
+	wg.Wait()
+	printMessage()
+
+	wg.Add(1)
+	go updateMessage("Hello, cosmos!", &wg)
+	wg.Wait()
+	printMessage()
+
+	wg.Add(1)
+	go updateMessage("Hello, world!", &wg)
+	wg.Wait()
+	printMessage()
 
 }
